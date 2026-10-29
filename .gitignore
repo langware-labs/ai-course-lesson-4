@@ -1,0 +1,22 @@
+# Secret values — never committed.
+# Flowpad writes project secrets into .env.local, and it REFUSES to write there
+# unless git is genuinely excluding the file (see: a tracked .env.local stays
+# committable no matter what this file says). Keep this line, and keep the file
+# untracked. Copy .env.local.example to get started.
+.env.local
+.env
+.env.*.local
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Build output / deps — a plain .html task needs none of these, but an app that
+# grows one shouldn't drag them into the repo.
+node_modules/
+dist/
+build/
+*.log

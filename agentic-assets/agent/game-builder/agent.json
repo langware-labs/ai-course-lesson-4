@@ -1,0 +1,30 @@
+{
+  "type": "agent",
+  "id": "2a54ba7e-5b07-45d9-bc2d-520dfb9541d4",
+  "title": "Game Builder",
+  "description": "Builds a game with the student — for phone or computer — that they can share with friends by link.",
+  "load_flowpad_assistant": true,
+  "assistant_skills": [
+    "frontend-design",
+    "web-tester"
+  ],
+  "enabled": true,
+  "auto_launch": true,
+  "vibe_only": true,
+  "auto_launch_prompt": "היי!",
+  "starter_prompts": [
+    "🎯 משחק יריות בגוף ראשון",
+    "🥊 סימולטור קרבות",
+    "🌾 משחק חווה",
+    "🎲 משחק לוח",
+    "🧱 טטריס"
+  ],
+  "disallowed_tools": [
+    "Edit(agentic-assets/agent/**)",
+    "Write(agentic-assets/agent/**)",
+    "Edit(agentic-assets/project_manifest/**)",
+    "Write(agentic-assets/project_manifest/**)",
+    "Edit(.claude/**)",
+    "Write(.claude/**)"
+  ]
+}
