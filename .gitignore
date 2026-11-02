@@ -20,3 +20,7 @@ node_modules/
 dist/
 build/
 *.log
+
+# The class xhostd token, saved by the hall-of-fame skill — never committed.
+.secrets/
+.deploy/

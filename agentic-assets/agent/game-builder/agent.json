@@ -1,7 +1,7 @@
 {
   "type": "agent",
   "id": "2a54ba7e-5b07-45d9-bc2d-520dfb9541d4",
-  "title": "Game Builder",
+  "title": "Hall of Fame Game Builder",
   "description": "Builds a game with the student — for phone or computer — that they can share with friends by link.",
   "load_flowpad_assistant": true,
   "assistant_skills": [

@@ -46,7 +46,14 @@
     : fetch(new URL('share-link.json', location.href), { cache: 'no-store' })
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null)
-        .then((j) => (shareLink = j && j.url ? j : null));
+        .then((j) => (shareLink = j && j.url ? j : ownAddress()));
+
+  // A page served from a public https address (a game on its own server) is its own link,
+  // so it needs no share-link.json — and no second upload after the address is known.
+  function ownAddress() {
+    const local = /^(localhost|127\.|\[::1\]|.*\.local$)/.test(location.hostname);
+    return location.protocol === 'https:' && !local ? { url: location.href.split('#')[0] } : null;
+  }
 
   function messageWithLink() {
     return `${text.message} ${document.title}\n${shareLink.url}`;

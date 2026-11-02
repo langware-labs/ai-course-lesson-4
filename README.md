@@ -1,7 +1,7 @@
 # ai-course-lesson-4 — a game with a Hall of Fame
 
 Lesson 4 of the AI course. Open it in Flowpad with **Open from git** and you get
-**Game Builder**, a vibe agent that builds a game with you — for a phone (portrait,
+**Hall of Fame Game Builder**, a vibe agent that builds a game with you — for a phone (portrait,
 touch) or a computer (keyboard and mouse) — as plain HTML/CSS/JS that opens on any
 device, with a Hall of Fame: the best scores of everyone who played, kept in a
 database behind a server. Every game has a "copy link" button in a
