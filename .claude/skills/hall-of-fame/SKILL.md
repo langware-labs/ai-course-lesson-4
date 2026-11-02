@@ -85,10 +85,12 @@ project (it respects `.gitignore`, so `.secrets/` and `.deploy/` stay out).
 - Once the game and server work, tell the student in one sentence what it does ("Flowpad
   will keep a saved copy of your project online, with its history"), then walk them to the
   button, in the student's language, step by step:
-  1. In the footer (the bottom bar), click the project's name, **ai-course-lesson-4**. That
-     opens the project's page (not the home page).
-  2. On that page, click the **"קשרו לענן"** button (**Link to cloud** in English). They may be
-     asked to sign in to the cloud first.
+  1. In the thin bar at the bottom of the screen, under the chat, the project's name
+     appears: **ai-course-lesson-4**. Click it. That opens the project's page.
+     (Never say "footer" — the student doesn't know the word.)
+  2. On that page, click the **"קשרו לענן"** button (**Link to cloud** in English). If a
+     sign-in window opens, they sign in to their Flowpad account and the button
+     continues by itself.
   3. Click **Back** to return to this chat, and tell me it's done.
   Wait for them to say it's done. You cannot press the button for them.
 - The button uploads the files the first time. After later changes, ask the student
