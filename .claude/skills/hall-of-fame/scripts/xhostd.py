@@ -4,6 +4,8 @@
     xhostd.py api METHOD /path [json-body]   call https://api.xhostd.com/path, print the answer
     xhostd.py put-secret <app-id> NAME       set an app secret; the value comes on stdin
     xhostd.py push <folder> <git-url>        git push <folder> to xhostd (token as a header)
+    xhostd.py new-admin-secret <app-id>      make this app's ADMIN_TOKEN (kept in .secrets/, set on the app)
+    xhostd.py delete-scores <url> <game> <name>   remove a test row from the live table
 
 The token lives in .secrets/xhostd_token (git-ignored, mode 600). It is never printed.
 Stdlib only.
@@ -13,14 +15,17 @@ from __future__ import annotations
 
 import os
 import re
+import secrets
 import subprocess
 import sys
+import urllib.parse
 import urllib.error
 import urllib.request
 from pathlib import Path
 
 API = "https://api.xhostd.com"
 TOKEN_FILE = Path(__file__).resolve().parents[3] / ".secrets" / "xhostd_token"
+ADMIN_FILE = TOKEN_FILE.with_name("hof_admin_token")
 
 
 def token() -> str:
@@ -55,6 +60,29 @@ def call(method: str, path: str, body: bytes | None, content_type: str) -> None:
         sys.exit(1)
 
 
+def new_admin_secret(app_id: str) -> None:
+    value = secrets.token_urlsafe(32)
+    ADMIN_FILE.parent.mkdir(exist_ok=True)
+    fd = os.open(ADMIN_FILE, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        f.write(value)
+    call("PUT", f"/apps/{app_id}/env/ADMIN_TOKEN?kind=secret", value.encode(), "application/octet-stream")
+
+
+def delete_scores(url: str, game: str, name: str) -> None:
+    if not ADMIN_FILE.is_file():
+        sys.exit("no admin secret yet - run new-admin-secret first")
+    query = urllib.parse.urlencode({"game": game, "name": name})
+    req = urllib.request.Request(f"{url.rstrip('/')}/api/scores?{query}", method="DELETE")
+    req.add_header("Authorization", f"Bearer {ADMIN_FILE.read_text().strip()}")
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            print(resp.status, resp.read().decode())
+    except urllib.error.HTTPError as e:
+        print(e.code, e.read().decode())
+        sys.exit(1)
+
+
 def main() -> None:
     args = sys.argv[1:]
     if args[:1] == ["save-token"] and len(args) == 2:
@@ -69,6 +97,10 @@ def main() -> None:
         env = {**os.environ, "GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "http.extraHeader",
                "GIT_CONFIG_VALUE_0": f"Authorization: Bearer {token()}"}
         subprocess.run(["git", "-C", args[1], "push", args[2], "HEAD:master"], env=env, check=True)
+    elif args[:1] == ["new-admin-secret"] and len(args) == 2:
+        new_admin_secret(args[1])
+    elif args[:1] == ["delete-scores"] and len(args) == 4:
+        delete_scores(*args[1:])
     else:
         sys.exit(__doc__)
 

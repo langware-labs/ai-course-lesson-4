@@ -2,8 +2,11 @@
 
     GET  /api/scores?game=<name>   -> {"ok": true, "scores": [{"name", "score"}, ...]}  top 10
     POST /api/scores {"game", "name", "score"} -> {"ok": true}
+    DELETE /api/scores?game=<name>&name=<player>  -> {"ok": true, "deleted": n}
+        only with `Authorization: Bearer $ADMIN_TOKEN` — the builder's way to remove a test row
 """
 
+import hmac
 import json
 import os
 import re
@@ -54,6 +57,20 @@ class Handler(BaseHTTPRequestHandler):
         if PUBLIC.resolve() not in target.parents or not target.is_file():
             return self.send(404, b"not found", "text/plain")
         self.send(200, target.read_bytes(), TYPES.get(target.suffix, "application/octet-stream"))
+
+    def do_DELETE(self):
+        url = urlparse(self.path)
+        admin = os.environ.get("ADMIN_TOKEN", "")
+        sent = self.headers.get("Authorization", "").removeprefix("Bearer ")
+        if url.path != "/api/scores" or not admin or not hmac.compare_digest(sent, admin):
+            return self.send_json(403, {"ok": False, "error": "not allowed"})
+        query = parse_qs(url.query)
+        game, name = query.get("game", [""])[0], query.get("name", [""])[0]
+        if not GAME_RE.match(game) or not name:
+            return self.send_json(400, {"ok": False, "error": "send game and name"})
+        with pool.connection() as conn:
+            deleted = conn.execute("DELETE FROM scores WHERE game = %s AND name = %s", (game, name)).rowcount
+        self.send_json(200, {"ok": True, "deleted": deleted})
 
     def do_POST(self):
         if urlparse(self.path).path != "/api/scores":

@@ -61,7 +61,8 @@ not guess them.
    `assets/server.py`, `install.sh`, `launch.sh` there). To deploy, rebuild the git-ignored
    staging folder `.deploy/<name>/` each time: `server/*` at its top, the game's files
    in `public/`, then `git init` (first time). Never edit the staging copy.
-4. **Push and deploy:** commit, then `xhostd.py push .deploy/<name> <git url from the answer in step 2>`,
+4. **Make the app's admin secret, then push and deploy:** run
+   `xhostd.py new-admin-secret <app-id>` once (it stays in `.secrets/`, never printed). Then commit, then `xhostd.py push .deploy/<name> <git url from the answer in step 2>`,
    then `xhostd.py api POST /apps/<app-id>/channels/<channel-id>/deploy '{"ref":"master"}'`.
    Wait until the deploy is done (read the answer; check `GET` on the channel again).
 5. **The link:** the public address of the app, from the answers. Give it to the student.
@@ -122,6 +123,14 @@ ask the player's name (remember it in `localStorage`), call `sendScore`, then sh
 `topScores()` as a table with the player's own row highlighted; if it returns `null`,
 say the table is unavailable and keep the game playable. Test with `web-tester`, then
 open the page, play a round, and check that the score shows in the table.
+
+## Test rows — clean up after yourself
+
+When you test the table, use a clearly fake player name, `__test__`. The moment the
+test is done (pass or fail), delete it from the live table:
+`xhostd.py delete-scores <app-address> <game> __test__`, then read the table again
+and make sure no `__test__` row is left. A test row must never stay in the student's Hall
+of Fame. If the delete fails, tell the student plainly and tell the teacher.
 
 ## Rules
 
