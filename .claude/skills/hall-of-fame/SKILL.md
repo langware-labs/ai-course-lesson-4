@@ -26,12 +26,18 @@ sentence at the moment you build it.
 
 ## The order
 
-1. **Wire the game** to the table (see "Wire the game") and test it locally with
+You lead every step; the student does not have to ask for any of them.
+
+1. **Offer it.** When the student has no more changes, offer the Hall of Fame (unless they
+   already asked).
+2. **Wire the game** to the table (see "Wire the game") and test it locally with
    `web-tester`, including the case where the server is unreachable.
-2. **Upload the code to the repo** when the student is done (see "Upload the code") —
-   **without running it yet.**
-3. **Run it** (see "Run it"): deploy, then test the live link — play a round, check the
-   score shows in the table, ask the student to open the link on another device.
+3. **Ask once more** whether they want to change anything. If not, **upload the code to the
+   repo** (see "Upload the code") — **without running it yet.**
+4. **Run it** (see "Run it"): deploy, then test the live link — play a round, check the score
+   shows in the table, ask the student to open the link on another device.
+5. **Offer the next two things:** that they share the link (it is an app now, so the Share
+   button is enough), and to see their database (see "Showing the student their database").
 
 ## The class token
 
@@ -53,9 +59,9 @@ The student's code is saved in a **repo** (git) on xhostd, with its **history of
 You do it for them: **do not send the student to the "Link to cloud" button or to the
 project page** for this, as an earlier version of this lesson did.
 
-**When to do it:** when you think the student has finished and has an app ready to upload,
-ask: "Is your game ready, or is there anything else you want to change before I upload it?"
-If they want more changes, make them. If not, upload.
+**When to do it:** after the Hall of Fame is wired and tested, ask: "Is there anything else
+you want to change before I save it?" If they want more changes, make them. If not, upload.
+Never suggest ideas of your own for the game; only ask whether *they* want a change.
 
 All calls go through `scripts/xhostd.py`. Read each answer for the ids you need; do not guess
 them. Keep the ids and the app's public address in `.secrets/hof_app.json` (git-ignored), so
@@ -116,7 +122,8 @@ Only after the code is uploaded (or updated):
 2. **The link:** the public address of the app, from the answers. Give it to the student.
    The Share button needs nothing written down: a page served from its own public address
    shares that address (`share.js`), so there is no second upload.
-3. Test the live link, as in "The order".
+3. Test the live link, as in "The order". Then offer, once, that they share the link with the
+   Share button: it is an app now, so there is nothing more to publish.
 
 The student must understand why this is a *different* kind of publishing from the
 `html-builder` publish script: that one only stores files; this one runs a program.
@@ -146,7 +153,8 @@ open the page, play a round, and check that the score shows in the table.
 
 ## Showing the student their database
 
-When the student asks to see their database, their scores, or "what the server saved":
+Offer this yourself once the app is running: "Want to see what your server saved?" Also do it
+whenever the student asks to see their database, their scores, or "what the server saved":
 run `xhostd.py show-scores <app-address> [game]` and show the rows as a small table
 (time, game, name, score). Explain in two sentences: this is the `scores` table in
 *their* Postgres database; the server adds a row each time a game sends a score, and
