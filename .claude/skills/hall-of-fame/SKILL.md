@@ -130,17 +130,21 @@ The student must understand why this is a *different* kind of publishing from th
 
 ## Wire the game
 
-In `game.js`, using relative URLs (`/api/scores`, so the same code works anywhere):
+In `game.js`. The page is also shown inside Flowpad (a `localhost` address), where a relative
+`/api/scores` would reach Flowpad, not the student's server. So use the server's full address
+(from `.secrets/hof_app.json`, `address`) whenever the page is not on `.xhostd.app`; the server
+already allows other origins (CORS):
 
 ```js
+const API = location.hostname.endsWith('.xhostd.app') ? '' : '<app address>';
 async function sendScore(name, score) {
   try {
-    await fetch('/api/scores', {method: 'POST', headers: {'Content-Type': 'application/json'},
+    await fetch(API + '/api/scores', {method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({game: GAME, name, score})});
   } catch { /* offline: the game still works */ }
 }
 async function topScores() {
-  try { return (await (await fetch('/api/scores?game=' + GAME)).json()).scores; }
+  try { return (await (await fetch(API + '/api/scores?game=' + GAME)).json()).scores; }
   catch { return null; }   // null = "the table can't be reached"
 }
 ```
