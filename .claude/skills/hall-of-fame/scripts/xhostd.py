@@ -8,6 +8,7 @@
     xhostd.py new-admin-secret <app-id>      make this app's ADMIN_TOKEN (kept in .secrets/, set on the app)
     xhostd.py delete-scores <url> <game> <name>   remove a test row from the live table
     xhostd.py show-scores <url> [game]       print every row of this app's scores table
+    xhostd.py share-link <game-folder> <url> write share-link.json there: the Share button appears
 
 The token lives in .secrets/xhostd_token (git-ignored, mode 600). It is never printed.
 Stdlib only.
@@ -104,6 +105,12 @@ def show_scores(url: str, game: str = "") -> None:
         print(f'{r["created_at"][:19]}  {r["game"]:<20} {r["name"]:<20} {r["score"]}')
 
 
+def share_link(folder: str, url: str) -> None:
+    # The game's Share button stays hidden until this file (or the page's own https address) exists.
+    Path(folder, "share-link.json").write_text(json.dumps({"url": url}) + "\n")
+    print(f"share-link.json written in {folder}")
+
+
 def main() -> None:
     args = sys.argv[1:]
     if args[:1] == ["save-token"] and len(args) == 2:
@@ -128,6 +135,8 @@ def main() -> None:
         delete_scores(*args[1:])
     elif args[:1] == ["show-scores"] and len(args) in (2, 3):
         show_scores(*args[1:])
+    elif args[:1] == ["share-link"] and len(args) == 3:
+        share_link(*args[1:])
     else:
         sys.exit(__doc__)
 

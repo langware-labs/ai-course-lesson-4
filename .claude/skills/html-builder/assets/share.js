@@ -4,9 +4,10 @@
 //   <script src="share.js" defer></script>
 //   <script src="share.js" defer data-corner="bottom-left"></script>
 //
-// The link it shares comes from share-link.json beside the page ({url}),
-// which scripts/publish.py writes when it publishes the page. Before that the page
-// has no public address, so the menu says so and offers only the download.
+// The link it shares comes from share-link.json beside the page ({url}), or is the page's own
+// public https address. Until there is a link the page has nothing to share, so the button is
+// NOT shown at all; it appears by itself, with every option working, the moment the link exists
+// (the page checks again every few seconds, so no reload is needed).
 //
 // data-corner: top-left (default) | top-right | bottom-left | bottom-right.
 //   Not top-right inside Flowpad: Flowpad floats its own Share pill there.
@@ -17,19 +18,16 @@
     he: {
       share: 'שיתוף', whatsapp: 'שליחה בווטסאפ', email: 'שליחה במייל', copy: 'העתקת הקישור',
       download: 'הורדה למחשב', copied: 'הקישור הועתק!', message: 'תראו מה בניתי:',
-      notYet: 'הדף עוד לא פורסם. בקשו מהסוכן לפרסם אותו כדי לקבל קישור.',
       failCopy: 'לא הצלחנו להעתיק — העתיקו מכאן:', failDownload: 'ההורדה לא הצליחה',
     },
     ar: {
       share: 'مشاركة', whatsapp: 'إرسال عبر واتساب', email: 'إرسال بالبريد', copy: 'نسخ الرابط',
       download: 'تنزيل إلى الحاسوب', copied: 'تم نسخ الرابط!', message: 'انظروا ماذا بنيت:',
-      notYet: 'لم تُنشر الصفحة بعد. اطلبوا من المساعد نشرها للحصول على رابط.',
       failCopy: 'لم ننجح في النسخ — انسخوا من هنا:', failDownload: 'فشل التنزيل',
     },
     en: {
       share: 'Share', whatsapp: 'Send on WhatsApp', email: 'Send by email', copy: 'Copy link',
       download: 'Download', copied: 'Link copied!', message: 'Look what I built:',
-      notYet: 'This page is not published yet. Ask the assistant to publish it to get a link.',
       failCopy: "Couldn't copy — copy it from here:", failDownload: 'The download failed',
     },
   };
@@ -41,12 +39,18 @@
   // ── the link ─────────────────────────────────────────────────────────────
   // A downloaded copy carries it inline (window.__SHARE_LINK__); a served page reads the file.
   let shareLink = window.__SHARE_LINK__ || null;
-  const linkReady = shareLink
-    ? Promise.resolve(shareLink)
-    : fetch(new URL('share-link.json', location.href), { cache: 'no-store' })
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null)
-        .then((j) => (shareLink = j && j.url ? j : ownAddress()));
+  async function findLink() {
+    if (shareLink) return shareLink;
+    const own = ownAddress();
+    if (own) return (shareLink = own);
+    if (location.protocol === 'file:') return null;
+    try {
+      const r = await fetch(new URL('share-link.json', location.href), { cache: 'no-store' });
+      const j = r.ok ? await r.json() : null;
+      if (j && j.url) shareLink = j;
+    } catch { /* no link yet */ }
+    return shareLink;
+  }
 
   // A page served from a public https address (a game on its own server) is its own link,
   // so it needs no share-link.json — and no second upload after the address is known.
@@ -238,7 +242,6 @@
     });
     return b;
   }
-  const note = document.createElement('p');
   menu.append(
     item('whatsapp', text.whatsapp, true, () =>
       window.open(`https://wa.me/?text=${encodeURIComponent(messageWithLink())}`, '_blank', 'noopener'),
@@ -251,14 +254,9 @@
       else say(`${text.failCopy} ${shareLink.url}`);
     }),
     item('download', text.download, false, download),
-    note,
   );
 
   async function open() {
-    await linkReady;
-    for (const b of menu.querySelectorAll('button')) b.disabled = b.dataset.needsLink === '1' && !shareLink;
-    note.textContent = text.notYet;
-    note.hidden = !!shareLink;
     menu.hidden = false;
     pill.setAttribute('aria-expanded', 'true');
     menu.querySelector('button:not(:disabled)')?.focus();
@@ -290,10 +288,19 @@
     }
   });
 
-  function mount() {
-    document.head.append(style);
-    document.body.append(pill, menu, toast);
+  // Show the button only once there is a link to share; keep looking until there is.
+  let mounted = false;
+  async function mountWhenLinked() {
+    if (mounted || !(await findLink())) return;
+    mounted = true;
+    clearInterval(poll);
+    const mount = () => {
+      document.head.append(style);
+      document.body.append(pill, menu, toast);
+    };
+    if (document.body) mount();
+    else document.addEventListener('DOMContentLoaded', mount);
   }
-  if (document.body) mount();
-  else document.addEventListener('DOMContentLoaded', mount);
+  const poll = setInterval(mountWhenLinked, 3000);
+  mountWhenLinked();
 })();

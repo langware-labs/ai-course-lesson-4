@@ -83,8 +83,9 @@ a later update finds them.
 4. **Tell the student**, in their language and in plain words: their code is now saved in a
    **repo in the cloud, with a history of versions**, so it is kept safe. You may call it a
    **repo** — that word is worth knowing — but never mention GitHub or Langware, and don't
-   promise a link to the files: the student has none. They can open the code on another
-   computer later (see "Open the code on another computer"); that needs the class token.
+   promise a link to the files: the student has none. Do NOT offer the
+   student to open the code on another computer; only if they ask, see "Open the code on
+   another computer" (it needs the class token).
 5. Before pushing, make sure no secret is inside a project file (the class token and the
    passwords must not be): check with `grep -r` for the token's first 6 characters *without
    printing the match*, and fix the file if it is there.
@@ -96,7 +97,7 @@ it again if the game is already running (see "Run it").
 
 ## Open the code on another computer
 
-If the student asks to get their game's code on another computer, or the project is gone:
+Only when the student asks (never offer it yourself) to get their game's code on another computer, or the project is gone:
 this works from the repo, and it needs the **class token** (the teacher posts it as
 `XHOSTD_TOKEN=...` in a Flowpad conversation; save it with `xhostd.py save-token`, never print it).
 
@@ -120,10 +121,14 @@ Only after the code is uploaded (or updated):
 1. `xhostd.py api POST /apps/<app-id>/channels/<channel-id>/deploy '{"ref":"master"}'`. Wait
    until the deploy is done (read the answer; check `GET` on the channel again).
 2. **The link:** the public address of the app, from the answers. Give it to the student.
-   The Share button needs nothing written down: a page served from its own public address
-   shares that address (`share.js`), so there is no second upload.
-3. Test the live link, as in "The order". Then offer, once, that they share the link with the
-   Share button: it is an app now, so there is nothing more to publish.
+   **Right away, by yourself, without being asked:** run
+   `xhostd.py share-link games/<game> <the address>`. The game's Share button is hidden until
+   this file exists; the moment it does, the button shows up (a page already open sees it within
+   a few seconds) with every option working (WhatsApp, email, copy link, download). The copy on
+   the app itself needs nothing: a page on its own address shares that address.
+3. Test the live link, as in "The order". Then tell the student the Share button is there now
+   and offer, once, that they send the link on WhatsApp: it is an app now, so there is nothing
+   more to publish.
 
 The student must understand why this is a *different* kind of publishing from the
 `html-builder` publish script: that one only stores files; this one runs a program.

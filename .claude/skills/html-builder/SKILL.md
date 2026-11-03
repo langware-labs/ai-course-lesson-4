@@ -71,8 +71,9 @@ and **download** (one self-contained `.html` file that opens with nothing beside
 4. The text follows `<html lang>` (Hebrew, Arabic, English).
 
 The link it shares is the page's **published** address, read from
-`share-link.json` beside the page. Until the page is published, the menu says so and
-offers only the download. Don't restyle or rewrite the button per page — if it needs
+`share-link.json` beside the page (or is the page's own public https address). Until
+there is a link the button is **not shown at all**; it appears by itself, with every
+option working, as soon as the link exists. Don't restyle or rewrite the button per page — if it needs
 to change, it changes in `assets/share.js`.
 
 ## Publishing — a public link with no sign-up
