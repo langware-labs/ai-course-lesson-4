@@ -2,8 +2,10 @@
 
     GET  /api/scores?game=<name>   -> {"ok": true, "scores": [{"name", "score"}, ...]}  top 10
     POST /api/scores {"game", "name", "score"} -> {"ok": true}
+    GET    /api/scores/all[?game=<name>]  -> {"ok": true, "rows": [...]}  every row, newest first
     DELETE /api/scores?game=<name>&name=<player>  -> {"ok": true, "deleted": n}
-        only with `Authorization: Bearer $ADMIN_TOKEN` — the builder's way to remove a test row
+        both need `Authorization: Bearer $ADMIN_TOKEN` — the builder's way to look at the whole
+        table and to remove a test row
 """
 
 import hmac
@@ -41,8 +43,25 @@ class Handler(BaseHTTPRequestHandler):
     def send_json(self, status, payload):
         self.send(status, json.dumps(payload).encode(), "application/json")
 
+    def is_admin(self):
+        admin = os.environ.get("ADMIN_TOKEN", "")
+        sent = self.headers.get("Authorization", "").removeprefix("Bearer ")
+        return bool(admin) and hmac.compare_digest(sent, admin)
+
     def do_GET(self):
         url = urlparse(self.path)
+        if url.path == "/api/scores/all":
+            if not self.is_admin():
+                return self.send_json(403, {"ok": False, "error": "not allowed"})
+            game = parse_qs(url.query).get("game", [""])[0]
+            if game and not GAME_RE.match(game):
+                return self.send_json(400, {"ok": False, "error": "bad game name"})
+            with pool.connection() as conn:
+                found = conn.execute("SELECT game, name, score, created_at FROM scores "
+                                     "WHERE (%s = '' OR game = %s) ORDER BY created_at DESC LIMIT 500",
+                                     (game, game)).fetchall()
+            rows = [{"game": g, "name": n, "score": s, "created_at": c.isoformat()} for g, n, s, c in found]
+            return self.send_json(200, {"ok": True, "rows": rows})
         if url.path == "/api/scores":
             game = parse_qs(url.query).get("game", [""])[0]
             if not GAME_RE.match(game):
@@ -60,9 +79,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_DELETE(self):
         url = urlparse(self.path)
-        admin = os.environ.get("ADMIN_TOKEN", "")
-        sent = self.headers.get("Authorization", "").removeprefix("Bearer ")
-        if url.path != "/api/scores" or not admin or not hmac.compare_digest(sent, admin):
+        if url.path != "/api/scores" or not self.is_admin():
             return self.send_json(403, {"ok": False, "error": "not allowed"})
         query = parse_qs(url.query)
         game, name = query.get("game", [""])[0], query.get("name", [""])[0]

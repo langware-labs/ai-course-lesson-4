@@ -4,8 +4,10 @@
     xhostd.py api METHOD /path [json-body]   call https://api.xhostd.com/path, print the answer
     xhostd.py put-secret <app-id> NAME       set an app secret; the value comes on stdin
     xhostd.py push <folder> <git-url>        git push <folder> to xhostd (token as a header)
+    xhostd.py clone <git-url> <folder>       git clone an app's repo into a NEW folder (token as a header)
     xhostd.py new-admin-secret <app-id>      make this app's ADMIN_TOKEN (kept in .secrets/, set on the app)
     xhostd.py delete-scores <url> <game> <name>   remove a test row from the live table
+    xhostd.py show-scores <url> [game]       print every row of this app's scores table
 
 The token lives in .secrets/xhostd_token (git-ignored, mode 600). It is never printed.
 Stdlib only.
@@ -13,6 +15,7 @@ Stdlib only.
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import secrets
@@ -24,7 +27,8 @@ import urllib.request
 from pathlib import Path
 
 API = "https://api.xhostd.com"
-TOKEN_FILE = Path(__file__).resolve().parents[3] / ".secrets" / "xhostd_token"
+# parents: scripts/ hall-of-fame/ skills/ .claude/ <project root>
+TOKEN_FILE = Path(__file__).resolve().parents[4] / ".secrets" / "xhostd_token"
 ADMIN_FILE = TOKEN_FILE.with_name("hof_admin_token")
 
 
@@ -83,6 +87,23 @@ def delete_scores(url: str, game: str, name: str) -> None:
         sys.exit(1)
 
 
+def show_scores(url: str, game: str = "") -> None:
+    if not ADMIN_FILE.is_file():
+        sys.exit("no admin secret yet - run new-admin-secret first")
+    query = urllib.parse.urlencode({"game": game}) if game else ""
+    req = urllib.request.Request(f"{url.rstrip('/')}/api/scores/all" + (f"?{query}" if query else ""))
+    req.add_header("Authorization", f"Bearer {ADMIN_FILE.read_text().strip()}")
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            rows = json.loads(resp.read())["rows"]
+    except urllib.error.HTTPError as e:
+        print(e.code, e.read().decode())
+        sys.exit(1)
+    print(f"{len(rows)} rows" + (f" for {game}" if game else ""))
+    for r in rows:
+        print(f'{r["created_at"][:19]}  {r["game"]:<20} {r["name"]:<20} {r["score"]}')
+
+
 def main() -> None:
     args = sys.argv[1:]
     if args[:1] == ["save-token"] and len(args) == 2:
@@ -93,6 +114,10 @@ def main() -> None:
     elif args[:1] == ["put-secret"] and len(args) == 3:
         call("PUT", f"/apps/{args[1]}/env/{args[2]}?kind=secret", sys.stdin.buffer.read(),
              "application/octet-stream")
+    elif args[:1] == ["clone"] and len(args) == 3:
+        env = {**os.environ, "GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "http.extraHeader",
+               "GIT_CONFIG_VALUE_0": f"Authorization: Bearer {token()}"}
+        subprocess.run(["git", "clone", args[1], args[2]], env=env, check=True)
     elif args[:1] == ["push"] and len(args) == 3:
         env = {**os.environ, "GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "http.extraHeader",
                "GIT_CONFIG_VALUE_0": f"Authorization: Bearer {token()}"}
@@ -101,6 +126,8 @@ def main() -> None:
         new_admin_secret(args[1])
     elif args[:1] == ["delete-scores"] and len(args) == 4:
         delete_scores(*args[1:])
+    elif args[:1] == ["show-scores"] and len(args) in (2, 3):
+        show_scores(*args[1:])
     else:
         sys.exit(__doc__)
 
