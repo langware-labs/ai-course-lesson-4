@@ -28,8 +28,8 @@ sentence at the moment you build it.
 
 You lead every step; the student does not have to ask for any of them.
 
-1. **Offer it.** When the student has no more changes, offer the Hall of Fame (unless they
-   already asked).
+1. **Offer it right after the first build** (unless they already asked). Do not ask whether
+   they want changes first, and never suggest changes: a student who wants one asks.
 2. **Wire the game** to the table (see "Wire the game") and test it locally with
    `web-tester`, including the case where the server is unreachable.
 3. **Ask once more** whether they want to change anything. If not, **upload the code to the
