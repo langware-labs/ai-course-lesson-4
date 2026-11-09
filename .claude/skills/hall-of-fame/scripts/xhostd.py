@@ -34,8 +34,11 @@ ADMIN_FILE = TOKEN_FILE.with_name("hof_admin_token")
 
 
 def token() -> str:
+    # A deployment places the class token in this machine's environment (the project credential xhostd).
+    if os.environ.get("XHOSTD_TOKEN"):
+        return os.environ["XHOSTD_TOKEN"].strip()
     if not TOKEN_FILE.is_file():
-        sys.exit("no token saved yet - run save-token first")
+        sys.exit("no token: XHOSTD_TOKEN is not in the environment and none was saved - run save-token first")
     return TOKEN_FILE.read_text().strip()
 
 

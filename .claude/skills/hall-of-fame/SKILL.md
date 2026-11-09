@@ -47,7 +47,9 @@ in the class uses the same one.
 - **Never print, quote or echo the token** — not in the chat, not in a file you show,
   not in a command line, not in a commit. Only `scripts/xhostd.py` touches it; it
   stores it in `.secrets/xhostd_token`, which git ignores.
-- First time only: `flow conversation list`, find the conversation with the teacher,
+- If your Credentials list says `xhostd … available`, the token is already in this machine's
+  environment as `XHOSTD_TOKEN` and `scripts/xhostd.py` uses it — skip `save-token`.
+- Otherwise, first time only: `flow conversation list`, find the conversation with the teacher,
   then `uv run --no-project python <this-skill>/scripts/xhostd.py save-token <conversation-id>`.
   It prints only "token saved". If it says there is no such message, ask the student
   to tell the teacher.

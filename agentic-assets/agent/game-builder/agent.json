@@ -26,5 +26,8 @@
     "Write(agentic-assets/project_manifest/**)",
     "Edit(.claude/**)",
     "Write(.claude/**)"
+  ],
+  "requirements": [
+    "xhostd"
   ]
 }
