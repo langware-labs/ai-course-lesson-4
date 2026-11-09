@@ -28,7 +28,13 @@
     "Write(.claude/**)"
   ],
   "requirements": [
-    "xhostd"
+    {
+      "kind": "credential",
+      "name": "xhostd",
+      "vars": [
+        "XHOSTD_TOKEN"
+      ]
+    }
   ],
   "machine_size": "lg"
 }
