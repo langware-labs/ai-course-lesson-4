@@ -23,9 +23,7 @@
     "Edit(agentic-assets/agent/**)",
     "Write(agentic-assets/agent/**)",
     "Edit(agentic-assets/project_manifest/**)",
-    "Write(agentic-assets/project_manifest/**)",
-    "Edit(.claude/**)",
-    "Write(.claude/**)"
+    "Write(agentic-assets/project_manifest/**)"
   ],
   "requirements": [
     {
