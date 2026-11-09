@@ -4,21 +4,11 @@
   "title": "Hall of Fame Game Builder",
   "description": "Builds a game with the student — for phone or computer — that they can share with friends by link.",
   "load_flowpad_assistant": true,
-  "assistant_skills": [
-    "frontend-design",
-    "web-tester"
-  ],
   "enabled": true,
-  "auto_launch": true,
-  "vibe_only": true,
-  "auto_launch_prompt": "היי!",
-  "starter_prompts": [
-    "🎯 משחק יריות בגוף ראשון",
-    "🥊 סימולטור קרבות",
-    "🌾 משחק חווה",
-    "🎲 משחק לוח",
-    "🧱 טטריס"
-  ],
+  "auto_launch": false,
+  "vibe_only": false,
+  "auto_launch_prompt": "",
+  "starter_prompts": [],
   "disallowed_tools": [
     "Edit(agentic-assets/agent/**)",
     "Write(agentic-assets/agent/**)",
@@ -28,6 +18,10 @@
     "Write(.claude/**)"
   ],
   "requirements": [
-    "xhostd"
-  ]
+    {
+      "kind": "variable",
+      "name": "xhostd"
+    }
+  ],
+  "machine_size": "sm"
 }
